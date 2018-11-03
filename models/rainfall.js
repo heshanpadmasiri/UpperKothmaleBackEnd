@@ -9,7 +9,7 @@ const pool = new sql.ConnectionPool({
   }
 });
 
-function rainfall_query(number_of_units,table,callback){
+function __rainfall_query(number_of_units,table,callback){
   pool.request().query(`SELECT TOP (${number_of_units * 12}) * FROM ${table}`).then((err,result) => {
     if(err){
       console.error(err);
@@ -19,6 +19,60 @@ function rainfall_query(number_of_units,table,callback){
       return callback(null,result);
     }
   });
+}
+
+function rainfall_query(number_of_units, table,callback){
+  var stations = [];  
+  var response = {}; 
+  pool.request().query('SELECT sm_id, sm_station_name,sm_type FROM dbo.tbl_station_master').then((result,err)=>{
+    if(err){
+      console.error(err);
+      return callback(err,null);
+    } else {
+      result.recordset.forEach(record => {
+        const station_name = record.sm_station_name;
+        const station_id = record.sm_id;
+        const station_type = record.sm_type;
+        if(station_type == 1){
+          var d = {
+            station_id:station_id,
+            station_name:station_name
+          }
+          stations.push(d);
+        }
+      });
+      
+    }
+  }).then(() => {
+    count = 0;
+    stations.forEach(station => {
+     
+      pool.request().query(`SELECT TOP(${number_of_units}) rfd_crfValue FROM ${table} WHERE rfd_sm_id = ${station.station_id}`).then((r,e)=>{
+        count ++;
+        if(e){
+          console.error(e);
+          return callback(e,null);
+        } else {
+          var temp = {
+            station_name: station.station_name,
+            rainfall:r.recordset,
+            station_id: station.station_id
+          }
+          const id = station.station_id;
+          response[id] = temp;          
+        } 
+        if(count == stations.length){
+          console.log(response);
+          callback(null, response);
+        }
+      });  
+    });
+    
+  }).catch(er => {
+    console.error(er);
+    callback(er,null);
+  })
+  
 }
 
 module.exports.get_data = (number_of_units,unit_type,callback) => {    

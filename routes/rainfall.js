@@ -15,7 +15,7 @@ router.get('/daily', function (req, res) {
         } else {
             res.json({
                 sucess:true,
-                msg:data
+                data:data
             });
         }
     })
@@ -33,7 +33,7 @@ router.get('/hourly', function (req, res) {
         } else {
             res.json({
                 sucess:true,
-                msg:data
+                data:data
             });
         }
     })
@@ -51,7 +51,7 @@ router.get('/monthly', function (req, res) {
         } else {
             res.json({
                 sucess:true,
-                msg:data
+                data:data
             });
         }
     })
