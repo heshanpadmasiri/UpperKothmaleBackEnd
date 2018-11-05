@@ -47,7 +47,7 @@ app.use(function(err, req, res, next) {
 
 
 // Start server and listen on http://localhost:8081/
-var server = app.listen(8081, function () {
+var server = app.listen(8080, function () {
     var host = server.address().address
     var port = server.address().port
 
