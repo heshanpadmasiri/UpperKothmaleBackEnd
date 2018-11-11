@@ -53,9 +53,15 @@ function rainfall_query(number_of_units, table,column_name,callback){
           console.error(e);
           return callback(e,null);
         } else {
+          console.log('ttt:',r.recordset)
+          let rainFall = [];
+          for (let index = 0; index < r.recordset.length; index++) {
+            const element = r.recordset[index];
+            rainFall.push(element[`rf${column_name}_crfValue`])
+          }
           var temp = {
             station_name: station.station_name,
-            rainfall:r.recordset,
+            rainfall:rainFall,
             station_id: station.station_id
           }
           const id = station.station_id;
