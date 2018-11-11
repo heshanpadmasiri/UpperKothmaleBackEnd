@@ -21,7 +21,7 @@ function __rainfall_query(number_of_units,table,callback){
   });
 }
 
-function rainfall_query(number_of_units, table,callback){
+function rainfall_query(number_of_units, table,column_name,callback){
   var stations = [];  
   var response = {}; 
   var stationIDs = [51,52,53,54,55,56]
@@ -35,7 +35,7 @@ function rainfall_query(number_of_units, table,callback){
   count = 0;
   stations.forEach(station => {
     console.log(station)
-    pool.request().query(`SELECT TOP(${number_of_units}) wld_TotFV FROM ${table} WHERE wld_sm_id = ${station.station_id}`).then((r,e)=>{
+    pool.request().query(`SELECT TOP(${number_of_units}) wl${column_name}_TotFV FROM ${table} WHERE wl${column_name}_sm_id = ${station.station_id}`).then((r,e)=>{
       count ++;
       if(e){
         console.error(e);
@@ -60,16 +60,19 @@ function rainfall_query(number_of_units, table,callback){
 module.exports.get_data = (number_of_units,unit_type,callback) => {    
     if(unit_type === 'day'){
       var table = 'dbo.tbl_water_level_d';
+      var columnName = 'd';
     } else if (unit_type === 'month'){
       var table = 'dbo.tbl_water_level_m';
+      var columnName = 'm'
     } else if (unit_type === 'hour'){
       var table = 'dbo.tbl_water_level_hr';
+      var columnName = 'h';
     }
     if(pool.connected){
-        return rainfall_query(number_of_units,table,callback);
+        return rainfall_query(number_of_units,table, columnName, callback);
     } else {
         pool.connect().then(() => {
-            return rainfall_query(number_of_units,table,callback);
+            return rainfall_query(number_of_units,table, columnName, callback);
         });
     }
 }

@@ -21,7 +21,7 @@ function __rainfall_query(number_of_units,table,callback){
   });
 }
 
-function rainfall_query(number_of_units, table,callback){
+function rainfall_query(number_of_units, table,column_name,callback){
   var stations = [];  
   var response = {}; 
   pool.request().query('SELECT sm_id, sm_station_name,sm_type FROM dbo.tbl_station_master').then((result,err)=>{
@@ -47,7 +47,7 @@ function rainfall_query(number_of_units, table,callback){
     count = 0;
     stations.forEach(station => {
      
-      pool.request().query(`SELECT TOP(${number_of_units}) rfd_crfValue FROM ${table} WHERE rfd_sm_id = ${station.station_id}`).then((r,e)=>{
+      pool.request().query(`SELECT TOP(${number_of_units}) rf${column_name}_crfValue FROM ${table} WHERE rf${column_name}_sm_id = ${station.station_id}`).then((r,e)=>{
         count ++;
         if(e){
           console.error(e);
@@ -78,16 +78,19 @@ function rainfall_query(number_of_units, table,callback){
 module.exports.get_data = (number_of_units,unit_type,callback) => {    
     if(unit_type === 'day'){
       var table = 'dbo.tbl_rain_fall_d';
+      var column_name = 'd';
     } else if (unit_type === 'month'){
       var table = 'dbo.tbl_rain_fall_m';
+      var column_name = 'm';
     } else if (unit_type === 'hour'){
       var table = 'dbo.tbl_rain_fall_hr';
+      var column_name = 'h';
     }
     if(pool.connected){
-        return rainfall_query(number_of_units,table,callback);
+        return rainfall_query(number_of_units,table,column_name,callback);
     } else {
         pool.connect().then(() => {
-            return rainfall_query(number_of_units,table,callback);
+            return rainfall_query(number_of_units,table,column_name,callback);
         });
     }
 }
