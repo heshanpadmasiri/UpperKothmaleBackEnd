@@ -34,7 +34,7 @@ function rainfall_query(number_of_units, table,column_name,callback){
   }
   count = 0;
   stations.forEach(station => {
-    pool.request().query(`SELECT TOP(${number_of_units}) wl${column_name}_TotFV FROM ${table} WHERE wl${column_name}_sm_id = ${station.station_id}`).then((r,e)=>{
+    pool.request().query(`SELECT TOP(${number_of_units}) wl${column_name}_WL FROM ${table} WHERE wl${column_name}_sm_id = ${station.station_id}`).then((r,e)=>{
       count ++;
       if(e){
         console.error(e);
@@ -43,7 +43,7 @@ function rainfall_query(number_of_units, table,column_name,callback){
         let waterLevel = [];
           for (let index = 0; index < r.recordset.length; index++) {
             const element = r.recordset[index];
-            waterLevel.push(element[`wl${column_name}_TotFV`])
+            waterLevel.push(element[`wl${column_name}_WL`])
           }
         var temp = {
           station_name: station.station_name,
