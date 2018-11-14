@@ -8,6 +8,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var rainfallRouter = require('./routes/rainfall');
 var waterLevelRouter = require('./routes/waterlevel');
+var stationRouter = require('./routes/station');
 
 var app = express();
 
@@ -25,6 +26,7 @@ app.use('/', indexRouter);
 app.use('/rainfall',rainfallRouter);
 app.use('/waterlevel',waterLevelRouter);
 app.use('/users', usersRouter);
+app.use('/station',stationRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
