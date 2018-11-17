@@ -67,7 +67,6 @@ function rainfall_query(number_of_units, table,column_name,callback){
           response[id] = temp;          
         } 
         if(count == stations.length){
-          console.log(response);
           callback(null, response);
         }
       });  

@@ -64,9 +64,13 @@ function station_query(callback){
                 }).then(()=>{
                     count++;
                     if(count === stations.length){
-                        callback(null,stations)
+                        return callback(null,stations)
                     }
+                }).catch(err => {
+                    return callback(err,null);
                 })
+            }).catch(err => {
+                return callback(err,null);
             });
         })
         
