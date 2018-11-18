@@ -80,13 +80,42 @@ function station_query(callback){
     })
 }
 
-module.exports.get_data = (callback) => {    
-    
+function get_station_names(callback){
+    var stations = [];    
+    pool.request().query('SELECT sm_station_name FROM dbo.tbl_station_master').then((result,err)=>{
+        if(err){
+          console.error(err);
+          return callback(err,null);
+        } else {
+          result.recordset.forEach(record => {
+            const station_name = record.sm_station_name;            
+            stations.push(station_name);
+          });
+        }
+    }).then(()=> {
+        return(callback(null,stations))
+    }).catch(err => {
+        console.log(err);
+        return callback(err,null);
+    })
+}
+
+module.exports.get_data = (callback) => {        
     if(pool.connected){
-        return station_query(callback)
+        return station_query(callback);
     } else {
         pool.connect().then(() => {
             return station_query(callback)
+        });
+    }
+}
+
+module.exports.get_names = (callback) => {
+    if(pool.connected){
+        return get_station_names(callback);
+    } else {
+        pool.connect().then(() => {
+            return get_station_names(callback)
         });
     }
 }

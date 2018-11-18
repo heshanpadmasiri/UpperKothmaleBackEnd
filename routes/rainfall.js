@@ -8,7 +8,6 @@ router.get('/daily', function (req, res) {
     if(req.query && req.query.number_of_units){
         number_of_units = req.query.number_of_units
     }
-    console.log(number_of_units)
     rainFallModel.get_data(number_of_units,'day',(err,data) => {
         if(err){
             console.log(err);
