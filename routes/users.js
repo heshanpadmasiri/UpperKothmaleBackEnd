@@ -8,7 +8,8 @@ router.get('/', function(req, res, next) {
 });
 
 router.post('/create-user',(req,res)=>{
-  const r = req;
+  const r = req.body;
+
   userModal.createUser(r,(err,data)=>{
     if(err){
       console.log(err);
@@ -25,4 +26,22 @@ router.post('/create-user',(req,res)=>{
   });
 })
 
+router.get('/hash',(req,res)=>{
+  const r = req.body;
+  console.log(r)
+  userModal.getPassword(r,(err,data)=>{
+    if(err){
+      console.log(err);
+      res.json({
+        sucess:false,
+        msg:err
+      });
+    } else {
+      res.json({
+        sucess:true,
+        data:data
+      });
+    }
+  });
+})
 module.exports = router;
