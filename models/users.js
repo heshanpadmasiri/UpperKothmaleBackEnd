@@ -30,7 +30,6 @@ function getPassword(email,callback){
             console.log(error)
             return callback(error,null);
         } else {
-            console.log(result)
             var password = result.recordset[0];
             if (password === undefined || password === null){
                 

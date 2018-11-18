@@ -27,8 +27,8 @@ router.post('/create-user',(req,res)=>{
 })
 
 router.get('/hash',(req,res)=>{
-  const r = req.body;
-  console.log(r)
+  const r = req.query;
+  console.log('params:',req.query)
   userModal.getPassword(r,(err,data)=>{
     if(err){
       console.log(err);
