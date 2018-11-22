@@ -80,6 +80,30 @@ function station_query(callback){
     })
 }
 
+function get_station_report(callback){ 
+    pool.request().query('SELECT TOP(1000) ss_sm_id,ss_last_packet_received_time,ss_flag FROM dbo.tbl_station_status').then((result,err)=>{
+        if(err){
+            console.log(err);
+            return callback(err,null);
+        } else {
+            var out = []
+            console.log(result.recordset)
+            for (let i = 0; i < result.recordset.length; i++) {
+                const element = result.recordset[i];
+                var temp = []
+                temp.push(`${element.ss_sm_id}`);
+                temp.push(element.ss_last_packet_received_time);
+                temp.push(element.ss_flag);
+                out.push(temp)
+            }
+            return callback(null,out)
+        }
+    }).catch(err => {
+        console.log(err);
+        return callback(err,null)
+    })
+}
+
 function get_station_names(callback){
     var stations = [];    
     pool.request().query('SELECT sm_station_name FROM dbo.tbl_station_master').then((result,err)=>{
@@ -98,6 +122,16 @@ function get_station_names(callback){
         console.log(err);
         return callback(err,null);
     })
+}
+
+module.exports.get_report = (callback) => {        
+    if(pool.connected){
+        return get_station_report(callback);
+    } else {
+        pool.connect().then(() => {
+            return get_station_report(callback)
+        });
+    }
 }
 
 module.exports.get_data = (callback) => {        

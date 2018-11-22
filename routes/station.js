@@ -20,6 +20,22 @@ router.get('/readings', (req,res)=> {
     })
 });
 
+router.get('/report', (req,res) => {
+    stationModel.get_report((err,data) => {
+        if(err){
+            res.json({
+                sucess:false,
+                msg:err
+            })
+        } else {
+            res.json({
+                sucess:true,
+                data:data
+            })
+        }
+    });
+})
+
 router.get('/names', (req,res)=> {
     stationModel.get_names((err,data)=>{
         if(err){
@@ -35,5 +51,9 @@ router.get('/names', (req,res)=> {
         }
     })
 });
+
+router.get('/report', (req,res)=>{
+
+})
 
 module.exports = router;
