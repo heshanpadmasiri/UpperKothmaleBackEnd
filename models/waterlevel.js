@@ -21,7 +21,7 @@ function __rainfall_query(number_of_units,table,callback){
   });
 }
 
-function rainfall_query(number_of_units, table,column_name,callback){
+function rainfall_query(number_of_units, table,column_name,time_column,callback){
   var stations = [];  
   var response = {}; 
   var stationIDs = [51,52,53,54,55,56]
@@ -34,7 +34,8 @@ function rainfall_query(number_of_units, table,column_name,callback){
   }
   count = 0;
   stations.forEach(station => {
-    pool.request().query(`SELECT TOP(${number_of_units}) wl${column_name}_WL FROM ${table} WHERE wl${column_name}_sm_id = ${station.station_id}`).then((r,e)=>{
+    const query = `SELECT TOP(${number_of_units}) wl${column_name}_WL, ${time_column} FROM ${table} WHERE wl${column_name}_sm_id = ${station.station_id}`;
+    pool.request().query(query).then((r,e)=>{
       count ++;
       if(e){
         console.error(e);
@@ -43,7 +44,32 @@ function rainfall_query(number_of_units, table,column_name,callback){
         let waterLevel = [];
           for (let index = 0; index < r.recordset.length; index++) {
             const element = r.recordset[index];
-            waterLevel.push(element[`wl${column_name}_WL`])
+            const marker = element[`${time_column}`]
+            let x;
+            const date =  marker.getDate();
+            const month = marker.getMonth() + 1;
+            const hour = marker.getHours();
+            const marker_text = `${date}/${month} - ${hour}:00`;
+            switch (column_name) {
+              case 'd':
+                x = date;
+                break;
+              case 'm':
+                x = month;
+                break;
+              case 'h':
+                x = hour;
+                break;
+              default:
+                break;
+            }      
+            const data = {
+              y:element[`wl${column_name}_WL`],
+              x:x,
+              marker:marker_text,              
+              timeStamp:marker
+            }
+            waterLevel.push(data)
           }
         var temp = {
           station_name: station.station_name,
@@ -65,19 +91,22 @@ function rainfall_query(number_of_units, table,column_name,callback){
 module.exports.get_data = (number_of_units,unit_type,callback) => {    
     if(unit_type === 'day'){
       var table = 'dbo.tbl_water_level_d';
-      var columnName = 'd';
+      var column_name = 'd';      
+      var time_column = 'wld_day';
     } else if (unit_type === 'month'){
       var table = 'dbo.tbl_water_level_m';
-      var columnName = 'm'
+      var column_name = 'm';      
+      var time_column = 'wlm_day';
     } else if (unit_type === 'hour'){
       var table = 'dbo.tbl_water_level_hr';
-      var columnName = 'h';
+      var column_name = 'h';
+      var time_column = 'wlh_time';
     }
     if(pool.connected){
-        return rainfall_query(number_of_units,table, columnName, callback);
+      return rainfall_query(number_of_units,table,column_name,time_column,callback);
     } else {
         pool.connect().then(() => {
-            return rainfall_query(number_of_units,table, columnName, callback);
+            return rainfall_query(number_of_units,table,column_name,time_column,callback);
         });
     }
 }

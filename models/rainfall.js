@@ -9,19 +9,8 @@ const pool = new sql.ConnectionPool({
   }
 });
 
-function __rainfall_query(number_of_units,table,callback){
-  pool.request().query(`SELECT TOP (${number_of_units * 12}) * FROM ${table}`).then((err,result) => {
-    if(err){
-      console.error(err);
-      return callback(err,null);
-    } else {
-      console.log(result);
-      return callback(null,result);
-    }
-  });
-}
 
-function rainfall_query(number_of_units, table,column_name,callback){
+function rainfall_query(number_of_units, table,column_name,time_column,callback){
   var stations = [];  
   var response = {}; 
   pool.request().query('SELECT sm_id, sm_station_name,sm_type FROM dbo.tbl_station_master').then((result,err)=>{
@@ -47,7 +36,7 @@ function rainfall_query(number_of_units, table,column_name,callback){
     count = 0;
     stations.forEach(station => {
      
-      pool.request().query(`SELECT TOP(${number_of_units}) rf${column_name}_crfValue FROM ${table} WHERE rf${column_name}_sm_id = ${station.station_id}`).then((r,e)=>{
+      pool.request().query(`SELECT TOP(${number_of_units}) rf${column_name}_crfValue, ${time_column} FROM ${table} WHERE rf${column_name}_sm_id = ${station.station_id}`).then((r,e)=>{
         count ++;
         if(e){
           console.error(e);
@@ -56,7 +45,32 @@ function rainfall_query(number_of_units, table,column_name,callback){
           let rainFall = [];
           for (let index = 0; index < r.recordset.length; index++) {
             const element = r.recordset[index];
-            rainFall.push(element[`rf${column_name}_crfValue`])
+            const marker = element[`${time_column}`]
+            let x;
+            const date =  marker.getDate();
+            const month = marker.getMonth() + 1;
+            const hour = marker.getHours();
+            const marker_text = `${date}/${month} - ${hour}:00`;
+            switch (column_name) {
+              case 'd':
+                x = date;
+                break;
+              case 'm':
+                x = month;
+                break;
+              case 'h':
+                x = hour;
+                break;
+              default:
+                break;
+            }      
+            const data = {
+              y:element[`rf${column_name}_crfValue`],
+              x:x,
+              marker:marker_text,
+              timeStamp:marker
+            }
+            rainFall.push(data)
           }
           var temp = {
             station_name: station.station_name,
@@ -83,18 +97,21 @@ module.exports.get_data = (number_of_units,unit_type,callback) => {
     if(unit_type === 'day'){
       var table = 'dbo.tbl_rain_fall_d';
       var column_name = 'd';
+      var time_column = 'rfd_date';
     } else if (unit_type === 'month'){
       var table = 'dbo.tbl_rain_fall_m';
       var column_name = 'm';
+      var time_column = 'rfm_date';
     } else if (unit_type === 'hour'){
       var table = 'dbo.tbl_rain_fall_hr';
       var column_name = 'h';
+      var time_column = 'rfh_time';
     }
     if(pool.connected){
-        return rainfall_query(number_of_units,table,column_name,callback);
+        return rainfall_query(number_of_units,table,column_name,time_column,callback);
     } else {
         pool.connect().then(() => {
-            return rainfall_query(number_of_units,table,column_name,callback);
+            return rainfall_query(number_of_units,table,column_name,time_column,callback);
         });
     }
 }
